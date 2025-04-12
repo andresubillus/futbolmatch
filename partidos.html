@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Coordinar Partido</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<h2>Proponer Partido 🗓️</h2>
+<form id="formPartido">
+    ID del equipo rival: <input type="number" id="paraEquipo" required><br>
+    Fecha: <input type="date" id="fecha" required><br>
+    Hora: <input type="time" id="hora" required><br>
+    <button type="submit">Proponer Partido</button>
+</form>
+<h3>Partidos</h3>
+<div id="listaPartidos"></div>
+<script>
+document.getElementById('formPartido').addEventListener('submit', function(e) {
+    e.preventDefault();
+    let para_equipo = document.getElementById('paraEquipo').value;
+    let fecha = document.getElementById('fecha').value;
+    let hora = document.getElementById('hora').value;
+
+    fetch('proponer_partido.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ para_equipo, fecha, hora })
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            alert('Partido propuesto correctamente.');
+            cargarPartidos();
+        }
+    });
+});
+
+function cargarPartidos() {
+    fetch('ver_partidos.php')
+        .then(res => res.json())
+        .then(partidos => {
+            let div = document.getElementById('listaPartidos');
+            div.innerHTML = '';
+            if (partidos.length === 0) {
+                div.innerHTML = '<p>No hay partidos.</p>';
+                return;
+            }
+            partidos.forEach(p => {
+                let pTag = document.createElement('div');
+                pTag.innerHTML = `📅 ${p.fecha} a las ${p.hora} | De: <strong>${p.de_nombre}</strong> ➡ Para: <strong>${p.para_nombre}</strong> | Estado: ${p.estado}`;
+                if (p.estado === 'pendiente' && parseInt(p.para_equipo) === parseInt(sessionStorage.getItem('equipo_id'))) {
+                    let aceptar = document.createElement('button');
+                    aceptar.textContent = 'Aceptar';
+                    aceptar.onclick = () => responderPartido(p.id, 'aceptar');
+                    let rechazar = document.createElement('button');
+                    rechazar.textContent = 'Rechazar';
+                    rechazar.onclick = () => responderPartido(p.id, 'rechazar');
+                    pTag.appendChild(aceptar);
+                    pTag.appendChild(rechazar);
+                }
+                div.appendChild(pTag);
+            });
+        });
+}
+
+function responderPartido(partido_id, accion) {
+    fetch('aceptar_rechazar_partido.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ partido_id, accion })
+    }).then(res => res.json()).then(data => {
+        alert(data.mensaje);
+        cargarPartidos();
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Almacenar equipo_id en sessionStorage para JS
+    fetch('get_equipo_id.php')
+        .then(res => res.json())
+        .then(data => {
+            sessionStorage.setItem('equipo_id', data.equipo_id);
+            cargarPartidos();
+        });
+});
+</script>
+</body>
+</html>

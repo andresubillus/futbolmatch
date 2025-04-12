@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscar Equipos</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        h1 { text-align: center; }
+        input, button { margin: 5px; padding: 8px; }
+        .equipo { margin: 10px 0; cursor: pointer; color: blue; text-decoration: underline; }
+        #modal, #modalNotif {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 20px; border: 1px solid #ccc; border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000; max-width: 400px;
+        }
+        #overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 999;
+        }
+        button { cursor: pointer; }
+    </style>
+</head>
+<body>
+<h1>Buscar Equipos</h1>
+
+<label>Distrito:</label>
+<input type="text" id="distrito">
+<label>Edad (ej: 17-20):</label>
+<input type="text" id="rango">
+<button onclick="buscarEquipos()">Buscar</button>
+
+<!-- Botón de notificaciones -->
+<button onclick="verNotificaciones()">🔔 Ver Notificaciones</button>
+
+<div id="resultados"></div>
+
+<!-- Overlay -->
+<div id="overlay"></div>
+
+<!-- Modal Info Equipo -->
+<div id="modal">
+    <h3>Información del Equipo</h3>
+    <div id="infoEquipo"></div>
+    <button onclick="enviarInvitacion()">Invitar</button>
+    <button onclick="cerrarModal()">Seguir Buscando</button>
+</div>
+
+<!-- Modal Notificaciones -->
+<div id="modalNotif">
+    <h3>Invitaciones Recibidas</h3>
+    <div id="listaInvitaciones"></div>
+    <h3>Respuestas a Tus Invitaciones</h3>
+    <div id="respuestasInvitaciones"></div>
+    <button onclick="cerrarNotificaciones()">Cerrar</button>
+</div>
+
+<script>
+let equipoSeleccionado = '';
+
+function buscarEquipos() {
+    const distrito = document.getElementById('distrito').value.trim();
+    const rango = document.getElementById('rango').value.trim();
+
+    fetch(`buscar.php?distrito=${encodeURIComponent(distrito)}&rango=${encodeURIComponent(rango)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error de red o respuesta del servidor');
+            }
+            return response.text(); // Obtener respuesta cruda
+        })
+        .then(data => {
+            try {
+                const jsonData = JSON.parse(data); // Intentar parsear como JSON
+                mostrarEquipos(jsonData);
+            } catch (e) {
+                console.error('Error al parsear JSON:', e);
+                console.error('Respuesta cruda del servidor:', data);
+                document.getElementById('resultados').innerHTML = '<p>Ocurrió un error inesperado.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error en la solicitud:', error);
+            document.getElementById('resultados').innerHTML = '<p>Error al conectar con el servidor.</p>';
+        });
+}
+
+function mostrarEquipos(data) {
+    const resultados = document.getElementById('resultados');
+    resultados.innerHTML = '';
+    if (data.length === 0) {
+        resultados.innerHTML = '<p>No se encontraron equipos.</p>';
+        return;
+    }
+    data.forEach(eq => {
+        const div = document.createElement('div');
+        div.className = 'equipo';
+        div.textContent = eq.nombre;
+        div.onclick = () => mostrarModal(eq);
+        resultados.appendChild(div);
+    });
+}
+
+
+function mostrarModal(equipo) {
+    equipoSeleccionado = equipo.nombre;
+    document.getElementById('infoEquipo').innerHTML = `
+        <p><strong>Nombre:</strong> ${equipo.nombre}</p>
+        <p><strong>Edad:</strong> ${equipo.edad_min} - ${equipo.edad_max}</p>
+        <p><strong>Distrito:</strong> ${equipo.distrito}</p>
+        <p><strong>Rango:</strong> ${equipo.rango}</p>
+        <p><strong>Jugadores:</strong> ${equipo.jugadores}</p>
+        <p><strong>Victorias:</strong> ${equipo.victorias}, <strong>Derrotas:</strong> ${equipo.derrotas}</p>
+    `;
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('modal').style.display = 'block';
+}
+
+function cerrarModal() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('modal').style.display = 'none';
+    equipoSeleccionado = '';
+}
+
+function enviarInvitacion() {
+    fetch('enviar_invitacion.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `equipo_destino=${encodeURIComponent(equipoSeleccionado)}`
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+        cerrarModal();
+    });
+}
+
+function verNotificaciones() {
+    fetch('ver_invitaciones.php')
+        .then(res => res.json())
+        .then(data => {
+            const lista = document.getElementById('listaInvitaciones');
+            lista.innerHTML = '';
+            if (data.length === 0) {
+                lista.innerHTML = '<p>No tienes invitaciones nuevas.</p>';
+            } else {
+                data.forEach(inv => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <p><strong>${inv.equipo_envia}</strong> te ha invitado.</p>
+                        <button onclick="responderInvitacion('${inv.equipo_envia}', 'aceptar')">Aceptar</button>
+                        <button onclick="responderInvitacion('${inv.equipo_envia}', 'rechazar')">Rechazar</button>
+                        <hr>
+                    `;
+                    lista.appendChild(div);
+                });
+            }
+
+            // Mostrar respuestas a invitaciones enviadas
+            fetch('ver_respuestas.php')
+                .then(res => res.json())
+                .then(respuestas => {
+                    const respuestasDiv = document.getElementById('respuestasInvitaciones');
+                    respuestasDiv.innerHTML = '';
+                    if (respuestas.length === 0) {
+                        respuestasDiv.innerHTML = '<p>No hay respuestas nuevas.</p>';
+                    } else {
+                        respuestas.forEach(resp => {
+                            const div = document.createElement('div');
+                            div.innerHTML = `<p>${resp.mensaje}</p><hr>`;
+                            respuestasDiv.appendChild(div);
+                        });
+                    }
+
+                    // Mostrar el modal después de cargar todo
+                    document.getElementById('overlay').style.display = 'block';
+                    document.getElementById('modalNotif').style.display = 'block';
+                });
+        });
+}
+
+function cerrarNotificaciones() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('modalNotif').style.display = 'none';
+}
+
+function responderInvitacion(equipo_envia, accion) {
+    fetch('responder_invitacion.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `equipo_envia=${encodeURIComponent(equipo_envia)}&accion=${encodeURIComponent(accion)}`
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+        verNotificaciones(); // Refresca la lista
+    });
+}
+</script>
+</body>
+</html>

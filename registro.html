@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Equipo</title>
+    <link rel="stylesheet" href="registro.css">
+</head>
+<body>
+    <div class="registro-container">
+        <h2>Registra tu equipo</h2>
+        <button class="google-btn"> 
+            <img src="google-icon.png" alt="Google"> Registrarse con Google
+        </button>
+        <div class="separator">o completa el formulario</div>
+
+        <form action="registro.php" method="post">
+            <label for="nombre">Nombre del Equipo</label>
+            <input type="text" id="nombre" name="nombre" required>
+
+            <label for="distrito">Distrito</label>
+            <input type="text" id="distrito" name="distrito" required>
+
+            <label for="rango">Rango de Edad (ej: 17-20)</label>
+            <input type="text" id="rango" name="rango" required>
+
+            <label for="jugadores">Número de Jugadores</label>
+            <input type="number" id="jugadores" name="jugadores" required>
+
+            <label for="celular">Celular</label>
+            <input type="text" id="celular" name="celular" required>
+
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit" class="btn">Registrarse</button>
+        </form>
+
+        <a href="index.html" class="link">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+</body>
+</html>

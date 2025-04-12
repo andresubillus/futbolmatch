@@ -1,0 +1,34 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Matches Aceptados</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<h2>Equipos con los que hiciste Match ✅</h2>
+<div id="listaMatches"></div>
+<script>
+function cargarMatches() {
+    fetch('matches.php')
+        .then(response => response.json())
+        .then(matches => {
+            let div = document.getElementById('listaMatches');
+            div.innerHTML = '';
+            if (matches.length === 0) {
+                div.innerHTML = '<p>No tienes matches aceptados aún.</p>';
+                return;
+            }
+            matches.forEach(eq => {
+                let p = document.createElement('p');
+                p.innerHTML = `<strong>${eq.nombre_equipo}</strong> - ${eq.distrito} - ${eq.rango} años - 📱 ${eq.celular}`;
+                div.appendChild(p);
+            });
+        });
+}
+
+document.addEventListener('DOMContentLoaded', cargarMatches);
+</script>
+</body>
+</html>
