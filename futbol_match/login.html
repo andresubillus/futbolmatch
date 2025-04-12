@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="login-container">
+        <h2>Inicia sesión en tu cuenta</h2>
+        <button class="google-btn"> 
+            <img src="descarga.jpg" alt="Google"> Continuar con Google
+        </button>
+        <div class="separator">o inicia sesión con correo electrónico y contraseña</div>
+
+        <form action="login.php" method="post">
+            <label for="nombre">Nombre de Equipo</label>
+            <input type="text" id="nombre" name="nombre" required>
+
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit" class="btn">Iniciar Sesión</button>
+        </form>
+
+        <a href="#" class="link">Restablecer contraseña</a>
+        <a href="#" class="register">Inscribirse</a>
+    </div>
+</body>
+</html>

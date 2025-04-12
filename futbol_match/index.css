@@ -1,0 +1,79 @@
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #7b68f5;
+    color: white;
+    text-align: center;
+}
+
+/* Encabezado fijo */
+header {
+    background: #46ffc8;
+    color: white;
+    padding: 1rem;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+}
+
+nav .btn {
+    background: white;
+    color: #ff4655;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* Hero */
+.hero {
+    margin-top: 80px;
+    padding: 100px 20px;
+    background: url('/futbol_match/toyoi-yuta-animated-gifs-everyday-life-japan-7-1.gif') no-repeat center center/cover;
+}
+.hero h1 {
+    font-size: 2.5rem;
+}
+
+.btn-main {
+    background: #ff4655;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-size: 1.2rem;
+    border-radius: 5px;
+}
+
+/* Ranking */
+.ranking, .proximos-partidos {
+    padding: 50px 20px;
+}
+
+.ranking table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    width: 60%;
+}
+
+.ranking th, .ranking td {
+    border: 1px solid white;
+    padding: 10px;
+}
+
+/* Footer */
+footer {
+    background: #111;
+    padding: 20px;
+}

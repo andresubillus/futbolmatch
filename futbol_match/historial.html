@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de Partidos</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<h2>Historial de Partidos Jugados ⚽</h2>
+<div id="historialPartidos"></div>
+<script>
+function cargarHistorial() {
+    fetch('historial_partidos.php')
+        .then(res => res.json())
+        .then(partidos => {
+            let div = document.getElementById('historialPartidos');
+            div.innerHTML = '';
+            if (partidos.length === 0) {
+                div.innerHTML = '<p>No hay partidos jugados aún.</p>';
+                return;
+            }
+            partidos.forEach(p => {
+                let partidoDiv = document.createElement('div');
+                partidoDiv.innerHTML = `
+                    📅 ${p.fecha} a las ${p.hora} | Rival: <strong>${p.rival}</strong> | Tipo: ${p.tipo} 
+                    <button onclick="mostrarCalificar(${p.partido_id})">Calificar</button>
+                    <div id="calificar_${p.partido_id}" style="display:none;">
+                        <label>Comentario:</label><br>
+                        <textarea id="comentario_${p.partido_id}"></textarea><br>
+                        <label>Calificación (1-5):</label>
+                        <input type="number" id="calificacion_${p.partido_id}" min="1" max="5"><br>
+                        <button onclick="enviarCalificacion(${p.partido_id})">Enviar</button>
+                    </div>
+                `;
+                div.appendChild(partidoDiv);
+            });
+        });
+}
+
+function mostrarCalificar(id) {
+    document.getElementById('calificar_' + id).style.display = 'block';
+}
+
+function enviarCalificacion(id) {
+    const comentario = document.getElementById('comentario_' + id).value;
+    const calificacion = document.getElementById('calificacion_' + id).value;
+    fetch('calificar_partido.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `partido_id=${id}&comentario=${encodeURIComponent(comentario)}&calificacion=${calificacion}`
+    }).then(res => res.json())
+      .then(data => {
+        if(data.success) {
+            alert('✅ Calificación enviada');
+            document.getElementById('calificar_' + id).style.display = 'none';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', cargarHistorial);
+</script>
+</body>
+</html>
