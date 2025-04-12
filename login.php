@@ -12,9 +12,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // Depuración
-    var_dump($nombre);
-    var_dump($password);
-    var_dump($row);
+    //var_dump($nombre);
+   // var_dump($password);
+   // var_dump($row);
 
     if ($row && $password == trim($row['password'])) {  // Sin cifrado, comparación simple
         $_SESSION['equipo'] = $row['nombre'];
